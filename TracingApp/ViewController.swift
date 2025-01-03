@@ -19,13 +19,10 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
     }
-
     func swiftyDraw(isDrawingIn drawingView: SwiftyDrawView, using touch: UITouch) {
+        
 
         let point = touch.location(in: drawingView)
-
-
-
 
         let iscontain = pathToHitTestAgainst.contains(point)
         if iscontain  {
@@ -37,8 +34,8 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
                if let first = self.currentPathToTrace.points().first{
-                print("distamce:",   first.distance(to: point))
-                print("length: ", currentPathToTrace.length/2)
+//                print("distamce:",   first.distance(to: point))
+//                print("length: ", currentPathToTrace.length/2)
 
 
                 if first.distance(to: point)>=21 &&  assistiveDrawLayersArray[strokeIndex].strokeEnd == 0  {
@@ -54,44 +51,74 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
                 if let drawItem = drawingView.drawItems.last {
-                        let offset =     drawItem.path.length/(self.currentPathToTrace.length/2)
+//                        let offset =     drawItem.path.length/(self.currentPathToTrace.length/2)
 
 //                    print(offset)
 
-                    if offset >= 0.9{
+//                    if offset >= 0.9{
+//
+//                            CATransaction.begin()
+//                            CATransaction.setDisableActions(false)
+//                            assistiveDrawLayersArray[strokeIndex].strokeEnd = 1
+//                            CATransaction.commit()
+//
+//
+//                        if strokeIndex == strokePathsArray.count-1{
+//                            dashLayer.removeFromSuperlayer()
+//                            dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
+//                            drawingView.clear()
+//                            pointsAlongPath.removeAll()
+//                            return
+//                        }
+//
+//                        dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
+//                        drawingView.clear()
+//                        pointsAlongPath.removeAll()
+//                        self.strokeIndex+=1
+//                        showHint()
+//                        showTutorial()
+//                        }
+//                        else {
+                            let cpth = strokePathsArray[strokeIndex].cgPath.copy(using: &defaultTransform)!
+                            for i in 0...numPointsOnPath {
+                                let pct = CGFloat(i) / CGFloat(numPointsOnPath)
+                                guard let p = cpth.point(at: pct) else {
+                                    fatalError("could not get point at: \(i) / \(pct)")
+                                }
+                                pointsAlongPath.append(p)
+                            }
 
-                            CATransaction.begin()
-                            CATransaction.setDisableActions(false)
-                            assistiveDrawLayersArray[strokeIndex].strokeEnd = 1
-                            CATransaction.commit()
+
+//                            CATransaction.begin()
+//                            CATransaction.setDisableActions(true)
+//                            assistiveDrawLayersArray[strokeIndex].strokeEnd = offset
+                            
+                            if let pIDX = findClosestPointIndex(to: point, in: pointsAlongPath) {
+                                print("hello: \(pIDX)")
+                                assistiveDrawLayersArray[strokeIndex].strokeEnd = CGFloat(pIDX) / CGFloat(numPointsOnPath)
+                                if pIDX == numPointsOnPath{
+                                    if strokeIndex == strokePathsArray.count-1{
+                                        dashLayer.removeFromSuperlayer()
+                                        dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
+                                        drawingView.clear()
+                                        pointsAlongPath.removeAll()
+                                        return
+                                    }
+
+                                    dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
+                                    drawingView.clear()
+                                    pointsAlongPath.removeAll()
+                                    self.strokeIndex+=1
+                                    showHint()
+                                    showTutorial()
+                                }
+                            }
+//                            CATransaction.commit()
 
 
-                        if strokeIndex == strokePathsArray.count-1{
-                            dashLayer.removeFromSuperlayer()
-                            dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
-                            drawingView.clear()
-                            return
-                        }
-
-                        dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
-                        drawingView.clear()
-                        self.strokeIndex+=1
-                        showHint()
-                        showTutorial()
-                        }
-                        else {
 
 
-
-                            CATransaction.begin()
-                            CATransaction.setDisableActions(true)
-                            assistiveDrawLayersArray[strokeIndex].strokeEnd = offset
-                            CATransaction.commit()
-
-
-
-
-                        }
+//                        }
 
 
                     }
@@ -130,15 +157,6 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
             showTutorial()
         }
-
-
-
-
-
-
-
-//        print(drawingView.currentPoint)
-
 
     }
 
@@ -362,6 +380,10 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
         }
     }
     var strokePathsArray = [MyBezierPath]()
+    
+    var numPointsOnPath = 100
+    var pointsAlongPath: [CGPoint] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.addSubview(targetView)
@@ -405,7 +427,14 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
 
-
+//        let cpth = path.cgPath.copy(using: &defaultTransform)!
+//        for i in 0...numPointsOnPath {
+//            let pct = CGFloat(i) / CGFloat(numPointsOnPath)
+//            guard let p = cpth.point(at: pct) else {
+//                fatalError("could not get point at: \(i) / \(pct)")
+//            }
+//            pointsAlongPath.append(p)
+//        }
 
 //        showHint()
 //        showTutorial()
@@ -424,7 +453,11 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
     }
-
+    // find the CGPoint in array of CGPoint, closest to target CGPoint
+    func findClosestPointIndex(to target: CGPoint, in points: [CGPoint]) -> Int? {
+        guard !points.isEmpty else { return nil }
+        return points.enumerated().min(by: { $0.element.distance(to: target) < $1.element.distance(to: target) })?.offset
+    }
 
     func setUpLayersForAssistiveMode(){
         self.assistiveDrawLayersArray.removeAll()
