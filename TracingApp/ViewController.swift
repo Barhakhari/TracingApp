@@ -79,14 +79,14 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 //                        showTutorial()
 //                        }
 //                        else {
-                            let cpth = strokePathsArray[strokeIndex].cgPath.copy(using: &defaultTransform)!
-                            for i in 0...numPointsOnPath {
-                                let pct = CGFloat(i) / CGFloat(numPointsOnPath)
-                                guard let p = cpth.point(at: pct) else {
-                                    fatalError("could not get point at: \(i) / \(pct)")
-                                }
-                                pointsAlongPath.append(p)
-                            }
+//                            let cpth = strokePathsArray[strokeIndex].cgPath.copy(using: &defaultTransform)!
+//                            for i in 0...numPointsOnPath {
+//                                let pct = CGFloat(i) / CGFloat(numPointsOnPath)
+//                                guard let p = cpth.point(at: pct) else {
+//                                    fatalError("could not get point at: \(i) / \(pct)")
+//                                }
+//                                pointsAlongPath.append(p)
+//                            }
 
 
 //                            CATransaction.begin()
@@ -491,7 +491,7 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
     func showHint(){
-        pointsAlongPath.removeAll()
+//        pointsAlongPath.removeAll()
         let path = self.strokePathsArray[strokeIndex]
 
         dashLayer.path = path.cgPath
@@ -502,7 +502,16 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
         dashLayer.transform = CATransform3DMakeAffineTransform(defaultTransform)
         dashLayer.strokeColor = UIColor(hex: "f06292").cgColor
         dashLayer.lineWidth = 0.5
-        self.currentPathToTrace =   path.cgPath.copy(strokingWithWidth: 0, lineCap: .round, lineJoin: .miter, miterLimit: 0, transform: defaultTransform)
+//        self.currentPathToTrace =   path.cgPath.copy(strokingWithWidth: 0, lineCap: .round, lineJoin: .miter, miterLimit: 0, transform: defaultTransform)
+        self.currentPathToTrace =   path.cgPath.copy(using: &defaultTransform)
+        pointsAlongPath = []
+        for i in 0...numPointsOnPath {
+                let pct = CGFloat(i) / CGFloat(numPointsOnPath)
+                guard let p = currentPathToTrace.point(at: pct) else {
+                    fatalError("could not get point at: \(i) / \(pct)")
+                }
+                pointsAlongPath.append(p)
+            }
 
         if let startPoint = path.startPoint {
 
