@@ -92,7 +92,6 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 //                            CATransaction.begin()
 //                            CATransaction.setDisableActions(true)
 //                            assistiveDrawLayersArray[strokeIndex].strokeEnd = offset
-                            
                             if let pIDX = findClosestPointIndex(to: point, in: pointsAlongPath) {
                                 print("hello: \(pIDX)")
                                 assistiveDrawLayersArray[strokeIndex].strokeEnd = CGFloat(pIDX) / CGFloat(numPointsOnPath)
@@ -104,7 +103,6 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
                                         pointsAlongPath.removeAll()
                                         return
                                     }
-
                                     dashLayer.sublayers?.filter{ $0 is CAShapeLayer }.forEach{ $0.removeFromSuperlayer() }
                                     drawingView.clear()
                                     pointsAlongPath.removeAll()
@@ -493,7 +491,7 @@ class ViewController: UIViewController, SwiftyDrawViewDelegate {
 
 
     func showHint(){
-
+        pointsAlongPath.removeAll()
         let path = self.strokePathsArray[strokeIndex]
 
         dashLayer.path = path.cgPath
